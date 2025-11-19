@@ -1,0 +1,7 @@
+{
+  "name": "apps/frontend",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}
