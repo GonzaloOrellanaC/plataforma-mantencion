@@ -1,0 +1,43 @@
+name: E2E Tests
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  e2e:
+    name: Run e2e tests (on-demand)
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18.x]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Cache node modules (apps/api)
+        uses: actions/cache@v4
+        with:
+          path: |
+            apps/api/node_modules
+            ~/.npm
+          key: ${{ runner.os }}-node-${{ matrix.node-version }}-apps-api-${{ hashFiles('**/apps/api/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-${{ matrix.node-version }}-apps-api-
+
+      - name: Install dependencies (apps/api)
+        working-directory: apps/api
+        run: npm ci --no-audit --no-fund
+
+      - name: Run e2e tests
+        working-directory: apps/api
+        env:
+          CI: true
+          JWT_INVITE_SECRET: invite-secret
+          JWT_ACCESS_SECRET: access-secret
+        run: npm run test:e2e

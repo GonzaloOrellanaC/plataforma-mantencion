@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18.x]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Cache node modules (apps/api)
+        uses: actions/cache@v4
+        with:
+          path: |
+            apps/api/node_modules
+            ~/.npm
+          key: ${{ runner.os }}-node-${{ matrix.node-version }}-apps-api-${{ hashFiles('**/apps/api/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-${{ matrix.node-version }}-apps-api-
+
+      - name: Install dependencies (apps/api)
+        working-directory: apps/api
+        run: npm ci --no-audit --no-fund
+
+      - name: Run unit tests
+        working-directory: apps/api
+        env:
+          CI: true
+          JWT_INVITE_SECRET: invite-secret
+          JWT_ACCESS_SECRET: access-secret
+        run: npm run test:unit
+
+      - name: Generate coverage (unit)
+        working-directory: apps/api
+        env:
+          CI: true
+          JWT_INVITE_SECRET: invite-secret
+          JWT_ACCESS_SECRET: access-secret
+        run: npm run coverage
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: apps-api-coverage
+          path: apps/api/coverage
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./apps/api/coverage/lcov.info
+        env:
+          # For private repos set CODECOV_TOKEN in your repository secrets
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  # e2e tests moved to a separate manual workflow `e2e.yml` (workflow_dispatch)
