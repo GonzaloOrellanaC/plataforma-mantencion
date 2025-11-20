@@ -49,6 +49,6 @@ npm run build
 npm run preview
 ```
 
-Soporte y siguientes pasos
-- Puedo añadir un ejemplo de `UploadService` en React que use `fetch` o `axios` para enviar `FormData` con autorización.
-- Si prefieres que el app esté en `apps/frontend` raíz (sin la carpeta interna `apps-frontend`), ya reorganicé los archivos para que el proyecto esté en `apps/frontend`.
+ - Ahora existe una página de ejemplo para subir archivos en `/upload` y un servicio `src/services/uploadService.ts`.
+ - Puedo añadir un ejemplo de `UploadService` en React que use `fetch` o `axios` para enviar `FormData` con autorización.
+ - Si prefieres que el app esté en `apps/frontend` raíz (sin la carpeta interna `apps-frontend`), ya reorganicé los archivos para que el proyecto esté en `apps/frontend`.
